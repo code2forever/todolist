@@ -19,7 +19,7 @@
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-info">
     <a class="navbar-brand" href="">TODOs List</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,13 +46,10 @@
             <a class="dropdown-item" href="">Your Account</a>
           </div>
         </li>
-        <li class="nav-item">
-          <a class="nav-link disabled" href="" tabindex="-1" aria-disabled="true">Disabled</a>
-        </li>
       </ul>
       <form class="form-inline my-2 my-lg-0">
         <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">Search</button>
       </form>
     </div>
   </nav>
@@ -70,7 +67,7 @@
         <textarea class="form-control" id="description" rows="3"></textarea>
       </div>
       <button type="submit" class="btn btn-primary" id="add">Add to list</button>
-      <button type="submit" class="btn btn-primary ml-4" id="clear">Clear All</button>
+      <button type="submit" class="btn btn-danger ml-4" id="clear">Clear All</button>
       <div id="items" class="my-4">
         <h2>Your Items</h2>
         <table class="table">
@@ -84,13 +81,7 @@
             </tr>
           </thead>
           <tbody id="tabbody">
-            <tr>
-              <th scope="row">1</th>
-              <td id="tittd">coffee</td>
-              <td id="desctd">Every programmer need coffee</td>
-              <td id="timedate">Date & Time</td>
-              <td><button class="btn btn-sm btn-primary" id="del">Delete</button></td>
-            </tr>
+            
           </tbody>
         </table>
       </div>
@@ -116,7 +107,6 @@
       var tbody = document.getElementById("tabbody");
       var str = null;
       var dt = document.getElementById("timedate");
-      var date = new Date();
 
       //This is for Delete button
       del=(itemindex)=>{
@@ -125,36 +115,21 @@
         todoarray = JSON.parse(todoarrayStr);
         todoarray.splice(itemindex,1);
         localStorage.setItem('todolist',JSON.stringify(todoarray));
-        if (todoarray.length!=0){
-          var str="";
-          todoarray.forEach((element, index) => { /*because if array.lenght==0 then 
-        this line will not work,as there will be no element in todoarray*/
-            str += `<tr>
-            <th scope="row">${index + 1}</th>
-            <td id="tittd">${element[0]}</td>
-            <td id="desctd">${element[1]}</td>
-            <td id="timedate">${date.toLocaleTimeString()}<br>${date.toLocaleDateString()}</td>
-            <td><button class="btn btn-sm btn-primary" id="del" onclick="del(${index})">Delete</button></td>
-          </tr>`
-            tbody.innerHTML = str;
-          })}
-          else{  //if there are no element then it means the table should be empty
-            tbody.innerHTML =null;
-          }
+        whenopen();
 
         }
       
 
       //this is for your clearall button
       clear.addEventListener("click", () => {
-        if (localStorage.getItem('todolist') == null) {
+        if (localStorage.length==0) {
           confirm("There is no data in your list to delete");
         }
         else {
           if (confirm("This will permanently delete your whole data. Do you wan't to continue") == true) {
             console.log("All data get deleted...");
-            tbody.innerHTML = null;
-            localStorage.clear();
+            localStorage.clear(); //this will permanently delete the list(todolist) inside your local storage
+            whenopen()
           }
         }
       })
@@ -165,19 +140,21 @@
 
       function whenopen() {
         console.log("Uploading List...");
-        if (localStorage.getItem('todolist') == null) {
+        if ((localStorage.length== 0) || (localStorage.getItem('todolist') == "[]")) {
+          localStorage.clear(); //this will permanently delete the list(todolist) inside your local storage as it is 
+          // todolist is empty now
           tbody.innerHTML = null;
         }
         else {
           todoarrayStr = localStorage.getItem('todolist');
           todoarray = JSON.parse(todoarrayStr);
-          localStorage.setItem('todolist', JSON.stringify(todoarray));
+          var str="";
           todoarray.forEach((element, index) => {
             str += `<tr>
             <th scope="row">${index + 1}</th>
             <td id="tittd">${element[0]}</td>
             <td id="desctd">${element[1]}</td>
-            <td id="timedate">${date.toLocaleTimeString()}<br>${date.toLocaleDateString()}</td>
+            <td id="timedate">${element[2]}<br>${element[3]}</td>
             <td><button class="btn btn-sm btn-primary" id="del" onclick="del(${index})">Delete</button></td>
           </tr>`//${index is used to get index no of the element so that it could be deleted using splice()}
             tbody.innerHTML = str;
@@ -190,9 +167,11 @@
         console.log("Updating List...");
         if (localStorage.getItem('todolist') == null) {
           todoarray = [];
+          const time=(new Date()).toLocaleTimeString();
+          const date=(new Date()).toLocaleDateString();
           var tit = document.getElementById("title").value;
           var desc = document.getElementById("description").value;
-          todoarray.push([tit, desc]);
+          todoarray.push([tit, desc,time,date]);
           localStorage.setItem('todolist', JSON.stringify(todoarray));
           tittag.value = null;
           desctag.value = null;
@@ -202,18 +181,20 @@
             <th scope="row">${index + 1}</th>
             <td id="tittd">${element[0]}</td>
             <td id="desctd">${element[1]}</td>
-            <td id="timedate">${date.toLocaleTimeString()}<br>${date.toLocaleDateString()}</td>
+            <td id="timedate">${element[2]}<br>${element[3]}</td>
             <td><button class="btn btn-sm btn-primary" id="del" onclick="del(${index})">Delete</button></td>
           </tr>`
             tbody.innerHTML = str;
           });
         }
         else {
+          const time=(new Date()).toLocaleTimeString();
+          const date=(new Date()).toLocaleDateString();
           var tit = document.getElementById("title").value;
           var desc = document.getElementById("description").value;
           todoarrayStr = localStorage.getItem('todolist');
           todoarray = JSON.parse(todoarrayStr);
-          todoarray.push([tit, desc]);
+          todoarray.push([tit, desc,time,date]);
           localStorage.setItem('todolist', JSON.stringify(todoarray));
           tittag.value = null;
           desctag.value = null;
@@ -223,7 +204,7 @@
             <th scope="row">${index + 1}</th>
             <td id="tittd">${element[0]}</td>
             <td id="desctd">${element[1]}</td>
-            <td id="timedate">${date.toLocaleTimeString()}<br>${date.toLocaleDateString()}</td>
+            <td id="timedate">${element[2]}<br>${element[3]}</td>
             <td><button class="btn btn-sm btn-primary" id="del" onclick="del(${index})">Delete</button></td>
           </tr>`
             tbody.innerHTML = str;
